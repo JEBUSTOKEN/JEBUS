@@ -1,0 +1,67 @@
+Tu contrato **JEBUSToken** está bien planteado y cumple un esquema clásico de token ERC20 con las siguientes características destacadas:
+
+---
+
+### ✅ **Resumen del diseño**
+
+* **ERC20 estándar**
+* **Burnable**: permite quemar tokens (por el holder o con `burnFrom`)
+* **Pausable**: pausas generales del contrato
+* **Ownable**: control total para el `owner` (creador)
+* **Blacklisting**: bloqueo manual de wallets (anti-abuso o control regulatorio)
+* **Max Supply fijo**: hardcap de emisión definido
+
+---
+
+### ✅ **Aspectos técnicos correctos**
+
+* Constructor inicializa el `maxSupply` y **pre-minta** 33M tokens al `owner`.
+* Funciones `mint`, `burn`, `burnFrom` correctamente controladas por `whenNotPaused` y blacklist.
+* Uso correcto de modificadores y herencia múltiple.
+* Sobrescritura correcta de `_update` para hacer control de blacklist sobre transferencias.
+
+---
+
+### ⚠️ **Observaciones y posibles mejoras**
+
+1. **Asignación inicial y estrategia de emisión**
+
+   * Solo se mintean 33M y el resto debe emitirse manualmente vía `mint`.
+   * Si planeás usar este contrato para un token de mercado abierto, pensá en un plan de distribución (vesting, liquidity pool, etc.).
+
+2. **Blacklist y uso en exchanges**
+
+   * Los DEX (como PancakeSwap) podrían no funcionar si la **liquidez está bloqueada** por un blacklist involuntario.
+   * Quizá podrías exceptuar algunas direcciones técnicas o contratos de DEX para evitar bloqueos accidentales.
+
+3. **Pausing demasiado general**
+
+   * Al pausar el contrato, se bloquean **todas las transferencias y quemas**, incluso las necesarias.
+   * Considerar si realmente querés tanto control o deberías limitarlo a funciones críticas.
+
+4. **Visibilidad del `blacklist`**
+
+   * La función `isBlacklisted` es pública, bien para transparencia.
+   * Si no querés mostrar wallets bloqueadas, deberías hacerla privada.
+
+---
+
+### 🛑 **No incluye funciones** (por si te interesan):
+
+* **Permit / EIP-2612** (aprobaciones sin gas)
+* **Roles diferenciados** (`AccessControl` en vez de `Ownable`)
+* **Eventos para bloqueo/desbloqueo de wallets** (útil para dApps o trackeo)
+
+---
+
+### ✅ Conclusión:
+
+El contrato **está correcto y seguro dentro de las prácticas de OpenZeppelin**, ideal para un token con función de control manual por parte del `owner` y emisión moderada.
+Si el objetivo es **uso en exchange o liquidez abierta**, revisaría el tema de pausas y blacklist.
+
+Si querés, puedo ayudarte a:
+
+* Agregar eventos
+* Sugerir esquema de control de roles
+* Hacer versión sin pausable para liquidez abierta
+* Crear un contrato de vesting o de distribución inicial
